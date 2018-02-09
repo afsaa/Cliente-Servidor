@@ -26,15 +26,21 @@ def main():
     files = loadFiles(directory)
     print(files)
 
+    piece_size = 1024 #Partes de 1Megabyte
     while True:
         msg = s.recv_json()
         if msg["op"] == "list":
             s.send_json({"files": list(files.keys())})
         elif msg["op"] == "download":
             filename = msg["file"]
-            with open(directory + filename) as input:
-                data = input.read()
-                s.send(data)
+            with open(directory + filename) as input, open("out_file", "wb") as out_file:
+                while True
+                    piece = input.read(piece_size)
+
+                    if piece == "":
+                        break #Fin del archivo
+                    out_file.write(piece)
+                s.send(out_file) #Envío del archivo completo
         else:
             print("JAJA!!")
             s.send_string("")

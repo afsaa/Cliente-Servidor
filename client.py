@@ -23,6 +23,13 @@ def main():
         file = s.recv()
         with open("descarga.algo", "wb") as output:
             output.write(file)
+    elif operation == "download_piece": #Descarga de partes específicas 
+        name = input("Piece number to download? ")
+        s.send_json({"op": "download_piece", "file": name})
+        file = s.recv()
+        with open("descarga.algo", "wb") as output:
+            output.write(file)
+
     else:
         print("Error!!! unsupported operation")
 

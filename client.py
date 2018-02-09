@@ -17,9 +17,15 @@ def main():
         s.send_json({"op":"list"})
         files = s.recv_json()
         print(files)
+    elif operation == "download":
+        name = input("File to download? ")
+        s.send_json({"op": "download", "file": name})
+        file = s.recv()
+        with open("descarga.algo", "wb") as output:
+            output.write(file)
     else:
         print("Error!!! unsupported operation")
-        
+
     print("Connecting to server {} at {}".format(ip, port))
 
 if __name__ == '__main__':

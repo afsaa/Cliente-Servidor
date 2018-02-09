@@ -30,5 +30,15 @@ def main():
         msg = s.recv_json()
         if msg["op"] == "list":
             s.send_json({"files": list(files.keys())})
+        elif msg["op"] == "download":
+            filename = msg["file"]
+            with open(directory + filename) as input:
+                data = input.read()
+                s.send(data)
+        else:
+            print("JAJA!!")
+            s.send_string("")
+        else:
+            print("Unsupported action!")
 if __name__ == '__main__':
     main()

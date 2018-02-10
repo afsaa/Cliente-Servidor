@@ -31,16 +31,33 @@ def main():
         msg = s.recv_json()
         if msg["op"] == "list":
             s.send_json({"files": list(files.keys())})
-        elif msg["op"] == "download":
+
+        elif msg["op"] == "search_piece":
             filename = msg["file"]
-            with open(directory + filename) as input, open("out_file", "wb") as out_file:
+            with open(directory + filename) as input:
                 while True
                     piece = input.read(piece_size)
-
                     if piece == "":
                         break #Fin del archivo
-                    out_file.write(piece)
-                s.send(out_file) #Envío del archivo completo
+                    else:
+                        pieces_list = [] #Creamos la lista de piezas
+                        pieces_list.append(piece) #Agregamos las piezas de la canción a la lista
+                return "Pieces of the song" + filename + ": " + len(pieces_list) #Número de piezas de la canción
+
+        elif msg["op"] == "download_piece":
+            filename = msg["file"]
+            filepiece = msg["piece"]
+            with open(directory + filename + filepiece) as input, open("out_file", "wb") as out_file:
+                while True
+                    piece = input.read(piece_size)
+                    if piece == "":
+                        break #Fin del archivo
+                    else:
+                        pieces_list = [] #Creamos la lista de piezas
+                        pieces_list.append(piece) #Agregamos las piezas de la canción a la lista
+
+                out_file.write(pieces_list[filepiece]) #En el archivo de salida se escribirá la pieza de la canción que se busca
+                s.send(out_file) #Envío de la pieza
         else:
             print("JAJA!!")
             s.send_string("")

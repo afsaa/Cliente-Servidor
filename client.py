@@ -17,17 +17,24 @@ def main():
         s.send_json({"op":"list"})
         files = s.recv_json()
         print(files)
+
     elif operation == "download":
         name = input("File to download? ")
         s.send_json({"op": "download", "file": name})
         file = s.recv()
         with open("descarga.algo", "wb") as output:
             output.write(file)
-    elif operation == "download_piece": #Descarga de partes específicas 
-        name = input("Piece number to download? ")
-        s.send_json({"op": "download_piece", "file": name})
+
+    elif operation == "search_piece": #Buscar el número de partes de una canción
+        name = input("Whats the name of the song? ")
+        s.send_json({"op": "search_piece", "file": name})
+
+    elif operation == "download_piece": #Descarga de partes específicas
+        name = input("Whats the name of the song? ")
+        piece = input("Number of piece to download? ")
+        s.send_json({"op": "download_piece", "file": name, "piece": piece})
         file = s.recv()
-        with open("descarga.algo", "wb") as output:
+        with open("descarga_parte.algo", "wb") as output:
             output.write(file)
 
     else:

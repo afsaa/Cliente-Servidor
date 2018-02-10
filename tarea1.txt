@@ -1,2 +1,2 @@
 Modificaciones:
-- Añadir al cliente -> Preguntar al servidor cuantas partes tiene un archivo (1 parte = 1024bytes) y realizar una función que permita al cliente descargar el archivo por partes
+- Añadir al cliente -> Preguntar al servidor cuantas partes tiene un archivo (1 parte = 1024bytes) y realizar una operación que permita al cliente descargar el archivo por partes

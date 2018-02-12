@@ -26,7 +26,7 @@ def main():
     files = loadFiles(directory)
     print(files)
 
-    piece_size = 1024 #Partes de 1Megabyte
+    piece_size = 1024*1024 #Partes de 1Megabyte
     while True:
         msg = s.recv_json()
         if msg["op"] == "list":
@@ -34,26 +34,29 @@ def main():
 
         elif msg["op"] == "search_piece":
             filename = msg["file"]
-            with open(directory + filename) as input:
-                while True
-                    piece = input.read(piece_size)
+            with open(directory + filename, "rb") as input:
+                n = 0
+                while True:
+                    if n = 0:
+                        data = input.read(piece_size)
+                    else:
+                        piece = input.seek(piece_size*n)
                     if piece == "":
                         break #Fin del archivo
                     else:
-                        pieces_list = [] #Creamos la lista de piezas
-                        pieces_list.append(piece) #Agregamos las piezas de la canción a la lista
-                return "Pieces of the song" + filename + ": " + len(pieces_list) #Número de piezas de la canción
+                        n = n +1
+                        print (n)
 
         elif msg["op"] == "download_piece":
             filename = msg["file"]
             filepiece = msg["piece"]
+            pieces_list = [] #Creamos la lista de piezas
             with open(directory + filename + filepiece) as input, open("out_file", "wb") as out_file:
-                while True
+                while True:
                     piece = input.read(piece_size)
                     if piece == "":
                         break #Fin del archivo
                     else:
-                        pieces_list = [] #Creamos la lista de piezas
                         pieces_list.append(piece) #Agregamos las piezas de la canción a la lista
 
                 out_file.write(pieces_list[filepiece]) #En el archivo de salida se escribirá la pieza de la canción que se busca
@@ -61,7 +64,7 @@ def main():
         else:
             print("JAJA!!")
             s.send_string("")
-        else:
-            print("Unsupported action!")
+        # else:
+        #     print("Unsupported action!")
 if __name__ == '__main__':
     main()

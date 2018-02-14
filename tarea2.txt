@@ -1,0 +1,4 @@
+1 - Notas de voz (Estilo WhatsApp)
+  * Especificar el nombre de la nota de voz y el usuario al cual va dirigido.
+2 - Chat de voz 1.0 -> 21 de Febrero
+3 - Chat de voz 2.0 (Multiples Usuarios) -> 26 de Febrero

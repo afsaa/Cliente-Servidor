@@ -1,6 +1,7 @@
 import zmq
 import sys
 import os
+from math import ceil
 
 def loadFiles(path):
     files = {}
@@ -11,60 +12,64 @@ def loadFiles(path):
         files[filename] = file
     return files
 
+
+def get_size_file(filename):
+	sz =int(os.path.getsize("music/" + filename))
+	#print(sz)
+	return(sz)
+
+def get_parts(filename):
+	sz = get_size_file(filename)
+	mega = sz / (1024*1024)
+	partes = ceil(mega)
+	print(partes)
+	return(partes)
+
 def main():
-    if len(sys.argv) != 3:
-        print("Error!!!")
-        exit()
+	if len(sys.argv) != 3:
+	    print("Error!!!")
+	    exit()
 
-    directory = sys.argv[2]
-    port = sys.argv[1]
 
-    context = zmq.Context()
-    s = context.socket(zmq.REP)
-    s.bind("tcp://*:{}".format(port))
+	directory = sys.argv[2]
+	port = sys.argv[1]
 
-    files = loadFiles(directory)
-    print(files)
+	context = zmq.Context()
+	s = context.socket(zmq.REP)
+	s.bind("tcp://*:{}".format(port))
 
-    piece_size = 1024*1024 #Partes de 1Megabyte
-    while True:
-        msg = s.recv_json()
-        if msg["op"] == "list":
-            s.send_json({"files": list(files.keys())})
+	files = loadFiles(directory)
 
-        elif msg["op"] == "search_piece":
-            filename = msg["file"]
-            with open(directory + filename, "rb") as input:
-                n = 0
-                while True:
-                    if n = 0:
-                        data = input.read(piece_size)
-                    else:
-                        piece = input.seek(piece_size*n)
-                    if piece == "":
-                        break #Fin del archivo
-                    else:
-                        n = n +1
-                        print (n)
+	print(files)
 
-        elif msg["op"] == "download_piece":
-            filename = msg["file"]
-            filepiece = msg["piece"]
-            pieces_list = [] #Creamos la lista de piezas
-            with open(directory + filename + filepiece) as input, open("out_file", "wb") as out_file:
-                while True:
-                    piece = input.read(piece_size)
-                    if piece == "":
-                        break #Fin del archivo
-                    else:
-                        pieces_list.append(piece) #Agregamos las piezas de la canción a la lista
+	piece_size = 1024 * 1024 #1mb
 
-                out_file.write(pieces_list[filepiece]) #En el archivo de salida se escribirá la pieza de la canción que se busca
-                s.send(out_file) #Envío de la pieza
-        else:
-            print("JAJA!!")
-            s.send_string("")
-        # else:
-        #     print("Unsupported action!")
+	while True:
+		msg = s.recv_json()
+
+		#operacion listar
+		if msg["op"] == "list":
+			s.send_json({"files": list(files.keys())})
+
+		#operacion descargar
+		elif msg["op"] == "search_piece":
+			filename = msg["file"]
+			partes = get_parts(filename)
+			s.send_json({"parts":partes})
+			with open(directory + filename, "rb") as input:
+				n=0
+				input.seek(0)
+				while True:
+					s.recv_json()
+					if n > partes:
+						break
+					piece_size=(1024*1024)
+					data = input.read(piece_size)
+					n = n + 1
+					s.send(data)
+					
+		else:
+			print("Unsupported action!")
+
 if __name__ == '__main__':
     main()

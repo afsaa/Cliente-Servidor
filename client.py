@@ -13,7 +13,7 @@ def main():
     s = context.socket(zmq.REQ)
     s.connect("tcp://{}:{}".format(ip, port)) #Conexión del socket
 
-    if operation == "list":
+    if operation == "list": # operacion listar musica del servidor
         s.send_json({"op":"list"})
         files = s.recv_json()
         print(files)
@@ -28,16 +28,22 @@ def main():
     elif operation == "search_piece": #Buscar el número de partes de una canción
         name = input("Whats the name of the song? ")
         s.send_json({"op": "search_piece", "file": name})
+        partes = s.recv_json()
+        print("la cancion contiene {} partes".format(partes))
+        s.send_json("")
+        m=int(partes["parts"])
+        i=0
+        while (i < m):
+        	file=s.recv()
+	        with open( name  + ".mp3", "ab") as output:
+	            output.write(file)
+	            s.send_json("")
+	        i=i+1    
 
-    elif operation == "download_piece": #Descarga de partes específicas
-        name = input("Whats the name of the song? ")
-        piece = input("Number of piece to download? ")
-        s.send_json({"op": "download_piece", "file": name, "piece": piece})
-        file = s.recv()
-        with open("descarga_parte.algo", "wb") as output:
-            output.write(file)
 
-    else:
+        print("All done!!")
+
+    else: #en caso de escribir una operacion inexistente
         print("Error!!! unsupported operation")
 
     print("Connecting to server {} at {}".format(ip, port))

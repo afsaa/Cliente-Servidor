@@ -13,7 +13,7 @@ using boost::tuple;
 
 typedef vector< tuple<int,double> > tuple_list;
 
-double calc_Inertia(int num_actual_cluster, list<double> distances_to_centroid) {
+double calcInertia(int num_actual_cluster, list<double> distances_to_centroid) {
   double inertia;
   double total_distance = 0;
   for (size_t i = 0; i < num_actual_cluster; i++) {
@@ -27,8 +27,8 @@ double calc_Inertia(int num_actual_cluster, list<double> distances_to_centroid) 
   return inertia;
 }
 
-void addInertiaTuple(tuple_list inertia_clusters, int num_actual_cluster, double actual_cluster_inertia) {
-  inertia_clusters.push_back( tuple<int, double>(num_actual_cluster, actual_cluster_inertia));
+void addInertiaTuple(tuple_list inertia_clusters, int num_actual_cluster, double actual_inertia_cluster) {
+  inertia_clusters.push_back( tuple<int, double>(num_actual_cluster, actual_inertia_cluster));
 }
 
 int main() {

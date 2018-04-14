@@ -8,8 +8,6 @@
 
 using namespace std;
 
-const string endpoint = "tcp://localhost:4242";
-
 // initialize the 0MQ context
 zmqpp::context context;
 
@@ -32,7 +30,7 @@ void taskVentilator() {
   sink.connect("tcp://localhost:5558");
   zmqpp::message message;
   //The next 2 lines shows the way to send a message.
-  message << "0" << 1;
+  message << "0";
   sink.send(message);
 
   //  Initialize random number generator
@@ -46,11 +44,10 @@ void taskVentilator() {
       //  Random workload from 1 to 100msecs
       workload = rand() % 100 + 1;
       total_msec += workload;
-
-      //message.rebuild(10);
-      message << '\0' << 10;
-      cout << "Workload: " << workload;
-      sender.send(message);
+      char string [10];
+      sprintf (string, "%d", workload);
+      cout << "Workload: " << string <<endl;
+      sender.send(string);
   }
   cout << "Total expected cost: " << total_msec << " msec" << endl;
   sleep (1);              //  Give 0MQ time to deliver

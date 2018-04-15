@@ -28,22 +28,19 @@ void taskWorker() {
   //  Process tasks forever
   while (1) {
 
-      zmqpp::message message;
+    zmqpp::message task;
+    receiver.receive(task);
 
-      // Send a single message from server to client
-      // zmqpp::message request;
-      // request << "Hello";
-      // sender.send(request);
+    // Printing the tasks from the ventilator
+    cout << "Workers test OK" << endl;
+    cout << "The message was: " << task.get(0);
+    cout << endl;
+    cout << endl;
 
-      zmqpp::message response;
-      receiver.receive(response);
-
-      // assert("0" == response.get(0));
-      cout << "Workers test OK" << endl;
-      cout << "The message was: " << response.get(0);
-      cout << endl;
-      cout << endl;
-
+    // Sending the result to the sink
+    zmqpp::message result;
+    result << task.get(0);
+    sender.send(result);
   }
 }
 

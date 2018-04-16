@@ -4,38 +4,59 @@
 #include <vector>         // std::vector
 #include <functional>     // std::greater
 
-// Para calcular la prioridad necesito la suma en el k que se está calculando, la suma del k anterior y la suma del k siguiente. Entre la suma anterior y la suma presente habría una pendiente (p1) y entre la suma presente y la suma siguiente habría una pendiente (p2). La prioridad se define por la diferencia entre p1 y p2.
+// Para calcular la prioridad necesito la suma en el k que se está calculando, la suma del k anterior y la suma del k siguiente. Entre la suma anterior y la suma presente habría una pendiente (p1) y entre la suma presente y la suma siguiente habría una pendiente (p2). La prioridad se define por la diferencia entre p1 y p2 dependiendo del cambio de pendiente entre las 2.
+// Cada prioridad va acompañado  de su k correspondiente.
 
 using namespace std;
 
-class mycomparison
+class SSD
 {
-  bool reverse;
 public:
-  mycomparison(const bool& revparam=false)
-    {reverse=revparam;}
-  bool operator() (const int& lhs, const int&rhs) const
-  {
-    if (reverse) return (lhs>rhs);
-    else return (lhs<rhs);
-  }
+	int priority;
+	int k_number;
+
+	SSD(int priority, int k_number)
+		: priority(priority), k_number(k_number)
+	{
+
+	}
 };
+
+struct SSDCompare
+{
+	bool operator()(const SSD &t1, const SSD &t2) const
+	{
+		int t1value = t1.priority * 1000 + t1.k_number;
+		int t2value = t2.priority * 1000 + t2.k_number;
+		return t1value < t2value;
+	}
+};
+
 
 int main ()
 {
 
-  // using mycomparison:
-  typedef std::priority_queue<int,std::vector<int>,mycomparison> mypq_type;
+  SSD SSD1(2, 200); //(prioridad, numero de k)
+	SSD SSD2(1, 30);
+	SSD SSD3(5, 150);
+	SSD SSD4(1, 10);
+	SSD SSD5(3, 1);
 
-  mypq_type fourth;                       // less-than comparison
-  mypq_type fifth (mycomparison(true));   // greater-than comparison
+	//priority_queue<SSD> queue;
+	priority_queue<SSD, vector<SSD>, SSDCompare> queue;
 
-  //Push some numbers on fourth
-  fourth.push(5);
-  fourth.push(1);
-  fourth.push(6);
-  fourth.push(2);
+	queue.push(SSD1);
+	queue.push(SSD2);
+	queue.push(SSD3);
+	queue.push(SSD4);
+	queue.push(SSD5);
 
-  cout << "Fourth first number: " << fourth.top() <<'\n';
-  return 0;
+	while (!queue.empty())
+	{
+		SSD t = queue.top();
+		cout << "priority " << t.priority << " k_number " << t.k_number << endl;
+		queue.pop();
+	}
+
+	return 0;
 }

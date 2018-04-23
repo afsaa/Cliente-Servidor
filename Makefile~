@@ -1,0 +1,7 @@
+CC=g++ -std=c++11
+PARALLEL_PATH=$/./Distributed_kmeans/taskWorker.cpp
+
+all: parallel_version
+
+parallel_version: $(PARALLEL_PATH)
+	${CC} ${PARALLEL_PATH} -o distributed-kmeans.bin -fopenmp -lzmq -lzmqpp

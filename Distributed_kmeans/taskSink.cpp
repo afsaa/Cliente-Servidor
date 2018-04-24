@@ -14,31 +14,19 @@ zmqpp::context context;
 
 void taskSink() {
 
-  //  Prepare our socket
+  //  Prepare our socket to receive the ssd
   zmqpp::socket receiver(context, zmqpp::socket_type::pull);
   receiver.bind("tcp://*:5558");
 
-  //  Wait for start of batch
-  zmqpp::message message;
-  receiver.receive(message);
-  cout << "The message was: " << message.get(0);
+  //  Recieving the ssd value
+  zmqpp::message ssd;
+  receiver.receive(ssd);
+  cout << "The ssd sended from worker was: " << ssd.get(0);
   cout << endl;
 
   //  Start our clock now
   struct timeval tstart;
   gettimeofday (&tstart, NULL);
-
-  //  Process 100 confirmations
-  int task_nbr;
-  int total_msec = 0;     //  Total calculated cost in msecs
-  for (task_nbr = 0; task_nbr < 100; task_nbr++) {
-
-      receiver.receive(message);
-      if (message.get(0) == "0")
-          cout << ":" << flush;
-      else
-          cout << "." << flush;
-  }
 
   //  Calculate and report duration of batch
   struct timeval tend, tdiff;
@@ -52,7 +40,7 @@ void taskSink() {
       tdiff.tv_sec = tend.tv_sec - tstart.tv_sec;
       tdiff.tv_usec = tend.tv_usec - tstart.tv_usec;
   }
-  total_msec = tdiff.tv_sec * 1000 + tdiff.tv_usec / 1000;
+  double total_msec = tdiff.tv_sec * 1000 + tdiff.tv_usec / 1000;
   cout << "\nTotal elapsed time: " << total_msec << " msec\n" << endl;
 
 }

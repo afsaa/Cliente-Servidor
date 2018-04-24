@@ -17,11 +17,12 @@ using ulmat = Matrix<ulist>;
 
 uint avail_films = 17770+1; 		// movies amount
 uint avail_users = 2649429+1;   // users amount
-uint avail_centroids = 100;	    // centroids amount
+uint avail_centroids = 10;	    // centroids amount k
 uint standard_dev_range = 5;				// variance range
 
 // initialize the 0MQ context
 zmqpp::context context;
+
 
 void get_cent_norm(const dmat& centroids,vector<double>& cent_norm){
 	/* it will calculate all centroids norm */
@@ -295,7 +296,17 @@ void print_result(const ulmat& similarity,const vector<double>& \
 	cout << "Total similarity value is = " << total_summary << "\n\n";
 }
 
-void taskWorker(mat dataset) {
+double calculate_SSD(const ulmat& similarity,const vector<double>& \
+								 similarities_summary) {
+	/* it will return the total summary of the similarities between each user and his centroid */
+	double total_summary = 0.0;
+	for(uint cent_id=0; cent_id < similarity.numRows(); cent_id++) {
+		total_summary += similarities_summary[cent_id];
+	}
+	return total_summary;
+}
+
+void taskWorker(const mat& dataset) {
   //  Socket to receive work from
   zmqpp::socket receiver(context, zmqpp::socket_type::pull);
   receiver.connect("tcp://localhost:5557");
@@ -309,17 +320,18 @@ void taskWorker(mat dataset) {
   getchar ();
   cout << "Processing tasks from the ventilator…\n" << endl;
 
+
   //  Process tasks forever
   while (1) {
 
-    zmqpp::message task;
-    receiver.receive(task);
+		zmqpp::message task;
+		receiver.receive(task);
 
-    // Printing the tasks from the ventilator
-    // cout << "Workers test OK" << endl;
-    // cout << "The message was: " << task.get(0);
-    // cout << endl;
-    // cout << endl;
+    // Printing the task sended from the ventilator
+    cout << "The value of k to calculate is: " << task.get(0);
+		avail_centroids = stoul(task.get(0));
+    cout << endl;
+    cout << endl;
 
     vector<double> users_norm, cent_norm;
   	cent_norm.resize(avail_centroids);
@@ -338,6 +350,7 @@ void taskWorker(mat dataset) {
   	bool _exit = false;
 
   	Timer timer;
+		while(true){
   	vector<double> similarities_summary;
   	similarities_summary.resize(avail_centroids,0.0);
   	/* ----------- phase 3 building similarity sets ----------- */
@@ -364,11 +377,21 @@ void taskWorker(mat dataset) {
   		cout << "Standard deviation = " << standard_deviation_val << "\n";
   		if(standard_deviation_val < 0.01)
   				_exit = true;
+
   	}
 
   	cout << "Current similarity = " << similarity_val << "\n";
   	if(similarity_val < 0.01 || _exit) {
-  		print_result(similarity,similarities_summary);
+			print_result(similarity,similarities_summary);
+			double total_summary = 0.0;
+			total_summary = calculate_SSD(similarity,similarities_summary);
+			// Sending the result to the sink
+	    // zmqpp::message result;
+			char ssd [10];
+			double result = 0.0;
+			result = total_summary;
+	    sprintf (ssd, "%f", result);
+	    sender.send(ssd);
   		break;
   	}
   	cout << "--------------------------------------------------" << "\n\n";
@@ -377,11 +400,8 @@ void taskWorker(mat dataset) {
 
   	cout << "Transcurred seconds = " <<	(double)timer.elapsed()/1000 << endl;
 
-    // Sending the result to the sink
-    zmqpp::message result;
-    result << task.get(0);
-    sender.send(result);
   }
+}
 }
 
 int main(int argc, char *argv[]){

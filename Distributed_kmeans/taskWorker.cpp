@@ -307,11 +307,11 @@ double calculate_SSD(const ulmat& similarity,const vector<double>& \
 }
 
 void taskWorker(const mat& dataset) {
-  //  Socket to receive work from
+  //  Socket to receive work from ventilator
   zmqpp::socket receiver(context, zmqpp::socket_type::pull);
   receiver.connect("tcp://localhost:5557");
 
-  //  Socket to send result to
+  //  Socket to send result to the sink
   zmqpp::socket sender(context, zmqpp::socket_type::push);
   sender.connect("tcp://localhost:5558");
 
@@ -386,7 +386,6 @@ void taskWorker(const mat& dataset) {
 			double total_summary = 0.0;
 			total_summary = calculate_SSD(similarity,similarities_summary);
 			// Sending the result to the sink
-	    // zmqpp::message result;
 			char ssd [10];
 			double result = 0.0;
 			result = total_summary;

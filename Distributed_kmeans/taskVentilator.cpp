@@ -11,6 +11,7 @@
 #include <utility>
 #include <list>
 #include <iterator>
+#include <cmath>
 
 using namespace std;
 
@@ -21,8 +22,11 @@ zmqpp::context context;
 zmqpp::socket_type type = zmqpp::socket_type::push;
 zmqpp::socket socket (context, type);
 
-// Initialize a counter
-int cont = 0;
+// Initialize a the k list.
+list<int> k_list;
+
+// Initialize a the ssd list.
+list<int> ssd_list;
 
 class SSD
 {
@@ -56,31 +60,26 @@ struct SSDCompare
 // 	return *ssd_list_front;
 // }
 
-// Get three (2) values of k and throw the best k.
-int getBestK(int prev_k, int next_k) {
-	int best_k = next_k/2;
+// Get two (2) values of k and throw the best k.
+int getBestK(int prev_k, int actual_k) {
+	int best_k = actual_k/2;
 	cout << " Value of k: "<< best_k;
 	cout << endl;
 	return best_k;
 }
 
-int get_k_priority(int k, double ssd) {
-  // double slope1 = 0; // Pendiente 1
-	// double slope2 = 0; // Pendiente 2
-	// double slope_change = 0; //(cambio de pendiente)
+// Takes two (points), the last and actual to calculate the slope and then calculate arctan(slope) to obtain the inclination angle. Also by this way define the priority.
+int get_k_priority(int prev_k, int prev_ssd, int actual_k, int actual_ssd) {
+	// slope = (y2-y1)/(x2-x1)
+	double slope = 0.0;
+	double inclination_angle = 0.0;
 
-	//slope = (y2-y1)/(x2-x1)
-	// slope1 = (prev_kssd - actual_kssd)/(prev_k - actual_k);
-	// slope2 = (next_kssd - actual_kssd)/(next_k - actual_k);
-	// slope_change = slope1 - slope2;
+	// Calculating the slope and the inclination angle of the slope.
+	slope = ((prev_ssd - actual_ssd)/(prev_k - actual_k));
+	inclination_angle = atan(slope);
 
-	// // Condition to set the best k with its priority.
-	// if (/* condition */) {
-	// 	/* code */
-	// }
-	// else{
-	//
-	// }
+	// Returning the inclination angle as the priority
+	return inclination_angle;
 }
 
 void taskVentilator() {
@@ -112,20 +111,19 @@ void taskVentilator() {
   char string [10];
   int work;
   work = getBestK(1, 10);
+	k_list.push_back(work); // Adding the k that will be sent to the workers into a list.
   sprintf (string, "%d", work);
   cout << "Sending best k: " << string <<endl;
   sender.send(string);
 
+
 	//  Recieving the ssd value from sink
   zmqpp::message ssd;
   receiver.receive(ssd);
-  cout << "The ssd sended from sink was: " << ssd.get(0);
+  cout << "The ssd sent from sink was: " << ssd.get(0);
   cout << endl;
-
+	ssd_list.push_back(stoi(ssd.get(0))); // Adding the value of the ssd sent from sink into a list.
   }
-
-  // cout << "Total expected cost: " << total_msec << " msec" << endl;
-  // sleep (1);              //  Give 0MQ time to deliver
 
 int main(int argc, char const *argv[]) {
   taskVentilator();

@@ -22,28 +22,31 @@ zmqpp::context context;
 zmqpp::socket_type type = zmqpp::socket_type::push;
 zmqpp::socket socket (context, type);
 
-// Initialize a the k list.
-list<int> k_list;
+// Initialize the k vector.
+vector<int> k_vector;
 
-// Initialize a the ssd list.
-list<int> ssd_list;
+// Initialize the ssd vector.
+vector<int> ssd_vector;
 
-class SSD
+// Define the counter
+int counter = 0;
+
+class IncAngle
 {
 public:
 	int priority;
 	int k_number;
 
-	SSD(int priority, int k_number)
+	IncAngle(int priority, int k_number)
 		: priority(priority), k_number(k_number)
 	{
 
 	}
 };
 
-struct SSDCompare
+struct IncAngleCompare
 {
-	bool operator()(const SSD &t1, const SSD &t2) const
+	bool operator()(const IncAngle &t1, const IncAngle &t2) const
 	{
 		int t1value = t1.priority * 1000 + t1.k_number;
 		int t2value = t2.priority * 1000 + t2.k_number;
@@ -107,23 +110,44 @@ void taskVentilator() {
   //  Initialize random number generator
   srandom ((unsigned) time (NULL));
 
+	// ******The following lines are going to be in a loop******
   // Sending the value of k to the worker
   char string [10];
   int work;
   work = getBestK(1, 10);
-	k_list.push_back(work); // Adding the k that will be sent to the workers into a list.
+	k_vector.push_back(work); // Adding the k that will be sent to the workers into a vector.
   sprintf (string, "%d", work);
   cout << "Sending best k: " << string <<endl;
   sender.send(string);
-
 
 	//  Recieving the ssd value from sink
   zmqpp::message ssd;
   receiver.receive(ssd);
   cout << "The ssd sent from sink was: " << ssd.get(0);
   cout << endl;
-	ssd_list.push_back(stoi(ssd.get(0))); // Adding the value of the ssd sent from sink into a list.
-  }
+	ssd_vector.push_back(stoi(ssd.get(0))); // Adding the value of the ssd sent from sink into a vector.
+
+	// If the ssd was received add 1 to the counter to keep track of the points (k, ssd).
+	if (stoi(ssd.get(0)) != 0) {
+		counter = counter + 1;
+	}
+
+	// If the value of counter is even(par) means that I got 2 points to use the priority function.
+	if (counter % 2 != 0) {
+		double actual_k_priority = 0.0;
+		actual_k_priority = get_k_priority(k_vector[counter-1], ssd_vector[counter-1], k_vector[counter], ssd_vector[counter]);
+
+		// Defining the priority queue.
+		IncAngle IncAngle1(actual_k_priority, k_vector[counter]);
+
+		// Setting up the queue.
+		priority_queue<IncAngle, vector<IncAngle>, IncAngleCompare> queue;
+
+		// Adding the prioritis with its k to the queue.
+		queue.push(IncAngle1);
+	}
+
+}
 
 int main(int argc, char const *argv[]) {
   taskVentilator();
